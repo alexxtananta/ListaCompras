@@ -3,122 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <style>
-        /* Estilos existentes */
-
-        .input-area {
-            display: flex;
-            flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
-            gap: 10px; /* Espaçamento entre os elementos */
-            margin-bottom: 20px; /* Espaço abaixo da área de inputs */
-        }
-
-        .input-area input {
-            flex: 1; /* Faz com que os inputs cresçam para ocupar o espaço disponível */
-            min-width: 150px; /* Largura mínima para cada input */
-        }
-
-        .input-area button {
-            width: 100%; /* Faz o botão ocupar toda a largura na linha seguinte */
-        }
-
-        .share-btn {
-            background-color: #25D366; /* Cor do WhatsApp */
-            color: white;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            font-size: 1em;
-        }
-
-        /* Estilos para o cupom fiscal que será gerado como imagem */
-        .receipt-container {
-            display: none; /* Oculto por padrão */
-            position: absolute;
-            left: -9999px; /* Fora da tela */
-            width: 320px;
-            padding: 15px;
-            background-color: #fdfdfd;
-            font-family: 'Courier New', Courier, monospace;
-            color: #000;
-            border: 1px dashed #000;
-        }
-        .receipt-container h3 {
-            text-align: center;
-            margin: 0 0 10px 0;
-        }
-        .receipt-container p {
-            margin: 2px 0;
-        }
-        .receipt-container .total {
-            margin-top: 10px;
-            font-weight: bold;
-            text-align: right;
-        }
-
-        /* Estilos para o cupom fiscal que será gerado como imagem (já existentes) */
-        .receipt-container {
-            display: none; /* Oculto por padrão */
-            position: absolute;
-            left: -9999px; /* Fora da tela */
-            width: 320px;
-            padding: 15px;
-            background-color: #fdfdfd;
-            font-family: 'Courier New', Courier, monospace;
-            color: #000;
-            border: 1px dashed #000;
-        }
-        .receipt-container h3 {
-            text-align: center;
-            margin: 0 0 10px 0;
-        }
-        .receipt-container p {
-            margin: 2px 0;
-        }
-        .receipt-container .total {
-            margin-top: 10px;
-            font-weight: bold;
-            text-align: right;
-        }
-
-        /* Estilos para o modal de visualização da imagem (já existentes) */
-        .modal {
-            display: none; /* Oculto por padrão */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .modal-content img {
-            max-width: 100%;
-            border: 1px solid #ccc;
-        }
-        .modal-content button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-    </style>
+    <title>Lista de Compras</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
-<body>
 
+<body>
     
     <div class="container">
         <h1>Lista de Compras</h1>
@@ -163,77 +53,8 @@
             });
         }
     </script>
+
     <script src="script.js"></script>
-    <script>
-        async function shareOnWhatsApp() {
-            const listBody = document.getElementById('listBody');
-            const rows = listBody.getElementsByTagName('tr');
-            const totalValue = document.getElementById('totalValue').innerText;
 
-            if (rows.length === 0) {
-                alert("A lista de compras está vazia!");
-                return;
-            }
-
-            // 1. Criar o elemento HTML para o cupom
-            const receipt = document.createElement('div');
-            receipt.className = 'receipt-container';
-            
-            let receiptHTML = '<h3>🛒 CUPOM DE COMPRAS 🛒</h3>';
-            receiptHTML += '<p>--------------------------------</p>';
-
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                const product = cells[0].innerText;
-                const quantity = cells[1].innerText;
-                const unitValue = cells[2].innerText;
-                const subtotal = cells[3].innerText.replace('R$ ', '');
-
-                receiptHTML += `<p><b>${product}</b></p>`;
-                receiptHTML += `<p>${quantity} un x ${unitValue} = <b>R$ ${subtotal}</b></p>`;
-                receiptHTML += '<p>--------------------------------</p>';
-            }
-            receiptHTML += `<p class="total">TOTAL: R$ ${totalValue}</p>`;
-            receipt.innerHTML = receiptHTML;
-            document.body.appendChild(receipt);
-            receipt.style.display = 'block'; // Mostra para o html2canvas
-
-            // 2. Gerar a imagem usando html2canvas
-            try {
-                const canvas = await html2canvas(receipt, { scale: 2 });
-                receipt.style.display = 'none'; // Oculta novamente
-                document.body.removeChild(receipt); // Remove da página
-
-                canvas.toBlob(async (blob) => {
-                    // 3. Tentar compartilhar a imagem usando a Web Share API
-                    if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'cupom.png', { type: 'image/png' })] })) {
-                        await navigator.share({
-                            files: [new File([blob], 'cupom.png', { type: 'image/png' })],
-                            title: 'Minha Lista de Compras',
-                            text: 'Aqui está minha lista de compras!',
-                        });
-                    } else {
-                        // Fallback: se não puder compartilhar imagem, compartilha o texto
-                        alert("Seu navegador não suporta o compartilhamento de imagens. Compartilhando como texto.");
-                        shareAsTextFallback(rows, totalValue);
-                    }
-                }, 'image/png');
-            } catch (error) {
-                console.error('Erro ao gerar a imagem:', error);
-                alert('Ocorreu um erro ao gerar a imagem do cupom. Compartilhando como texto.');
-                shareAsTextFallback(rows, totalValue);
-            }
-        }
-
-        function shareAsTextFallback(rows, totalValue) {
-            let message = '🛒 *CUPOM DE COMPRAS* 🛒\n-----------------------------------\n';
-            for (let i = 0; i < rows.length; i++) {
-                const [product, quantity, unitValue, subtotal] = Array.from(rows[i].cells).map(cell => cell.innerText);
-                message += `*${product}*\n${quantity} un x ${unitValue} = *${subtotal}*\n-----------------------------------\n`;
-            }
-            message += `*TOTAL: R$ ${totalValue}*`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-        }
-    </script>
 </body>
 </html>
