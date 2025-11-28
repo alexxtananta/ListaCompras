@@ -19,20 +19,22 @@
             <button onclick="addItem()">Adicionar</button>
         </div>
         
-        <table id="shoppingList">
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Quantidade</th>
-                    <th>Valor Unitário</th>
-                    <th>Subtotal</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="listBody">
-                <!-- Itens da lista serão adicionados aqui via JavaScript -->
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="shoppingList">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtde</th>
+                        <th>Valor Unit</th>
+                        <th>Subtotal</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="listBody">
+                    <!-- Itens da lista serão adicionados aqui via JavaScript -->
+                </tbody>
+            </table>
+        </div>
         
         <div class="total-area">
             <strong>Total: R$ <span id="totalValue">0.00</span></strong>
