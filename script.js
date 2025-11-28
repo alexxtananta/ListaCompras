@@ -106,3 +106,73 @@ function saveItem(button) {
         alert('Por favor, preencha todos os campos corretamente.');
     }
 }
+
+ async function shareOnWhatsApp() {
+            const listBody = document.getElementById('listBody');
+            const rows = listBody.getElementsByTagName('tr');
+            const totalValue = document.getElementById('totalValue').innerText;
+
+            if (rows.length === 0) {
+                alert("A lista de compras está vazia!");
+                return;
+            }
+
+            // 1. Criar o elemento HTML para o cupom
+            const receipt = document.createElement('div');
+            receipt.className = 'receipt-container';
+            
+            let receiptHTML = '<h3>🛒 CUPOM DE COMPRAS 🛒</h3>';
+            receiptHTML += '<p>--------------------------------</p>';
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const product = cells[0].innerText;
+                const quantity = cells[1].innerText;
+                const unitValue = cells[2].innerText;
+                const subtotal = cells[3].innerText.replace('R$ ', '');
+
+                receiptHTML += `<p><b>${product}</b></p>`;
+                receiptHTML += `<p>${quantity} un x ${unitValue} = <b>R$ ${subtotal}</b></p>`;
+                receiptHTML += '<p>--------------------------------</p>';
+            }
+            receiptHTML += `<p class="total">TOTAL: R$ ${totalValue}</p>`;
+            receipt.innerHTML = receiptHTML;
+            document.body.appendChild(receipt);
+            receipt.style.display = 'block'; // Mostra para o html2canvas
+
+            // 2. Gerar a imagem usando html2canvas
+            try {
+                const canvas = await html2canvas(receipt, { scale: 2 });
+                receipt.style.display = 'none'; // Oculta novamente
+                document.body.removeChild(receipt); // Remove da página
+
+                canvas.toBlob(async (blob) => {
+                    // 3. Tentar compartilhar a imagem usando a Web Share API
+                    if (navigator.canShare && navigator.canShare({ files: [new File([blob], 'cupom.png', { type: 'image/png' })] })) {
+                        await navigator.share({
+                            files: [new File([blob], 'cupom.png', { type: 'image/png' })],
+                            title: 'Minha Lista de Compras',
+                            text: 'Aqui está minha lista de compras!',
+                        });
+                    } else {
+                        // Fallback: se não puder compartilhar imagem, compartilha o texto
+                        alert("Seu navegador não suporta o compartilhamento de imagens. Compartilhando como texto.");
+                        shareAsTextFallback(rows, totalValue);
+                    }
+                }, 'image/png');
+            } catch (error) {
+                console.error('Erro ao gerar a imagem:', error);
+                alert('Ocorreu um erro ao gerar a imagem do cupom. Compartilhando como texto.');
+                shareAsTextFallback(rows, totalValue);
+            }
+        }
+
+        function shareAsTextFallback(rows, totalValue) {
+            let message = '🛒 *CUPOM DE COMPRAS* 🛒\n-----------------------------------\n';
+            for (let i = 0; i < rows.length; i++) {
+                const [product, quantity, unitValue, subtotal] = Array.from(rows[i].cells).map(cell => cell.innerText);
+                message += `*${product}*\n${quantity} un x ${unitValue} = *${subtotal}*\n-----------------------------------\n`;
+            }
+            message += `*TOTAL: R$ ${totalValue}*`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        }
